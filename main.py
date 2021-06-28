@@ -29,6 +29,7 @@ def click_sound():
 
 def did_you_win(is_win, my_time, die_reason = " "):
     pygame.mixer.music.stop()
+    clock = pygame.time.Clock()
     falling_sound = mixer.Sound("Sounds/falling.wav")
     # font
     main_font = pygame.font.SysFont(constants.FONT_COMIC, constants.TITLE_SIZE)
@@ -60,9 +61,16 @@ def did_you_win(is_win, my_time, die_reason = " "):
     my_button = GetModifiedButton()
     re_button = my_button.get_re_button()
 
-    # Game loop
+    # fps stuff
+    last_time = time.time()
+    FPS = 30
+    icon_vel = 5
+
     running = True
     while running:
+        dt = time.time() - last_time
+        dt *= 30
+        last_time = time.time()
         # screen fill
         screen.fill(constants.WHITE)
 
@@ -89,9 +97,11 @@ def did_you_win(is_win, my_time, die_reason = " "):
             screen.blit(win_background, (0, 0))
             # get rect
             icon_rect = my_icon.get_rect()
+            pygame.draw.rect(screen, (255, 0, 0), icon_rect)
             # simple animation of icon
             if icon_rect.y < 286:
-                my_icon.sprite_move(0, 2)
+                h = icon_vel * dt
+                my_icon.sprite_move(0, h)
             if hit_effect:
                 if icon_rect.y == 286:
                     hit_effect = False
@@ -130,6 +140,8 @@ def did_you_win(is_win, my_time, die_reason = " "):
 
         # refresh the screen every frame
         pygame.display.update()
+        # slow down to see the animations move
+        clock.tick(FPS)
 
 
 def credits_page():
@@ -329,8 +341,15 @@ def third_game_scene(my_time, prisoner_list, left_prisoner_list, one_prisoner):
 
     my_bullet = BulletClass(screen, constants.BULLET_X_SPEED, constants.BULLET_Y_SPEED)
 
+    # fps stuff
+    last_time = time.time()
+    FPS = 30
+
     running = True
     while running:
+        dt = time.time() - last_time
+        dt *= 30
+        last_time = time.time()
         cool_down_counter += 2
 
         # upload image
@@ -355,11 +374,11 @@ def third_game_scene(my_time, prisoner_list, left_prisoner_list, one_prisoner):
        # prisoner events
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and x > 87: 
-            x -= vel
+            x -= vel * dt
             left = True
             right = False
         elif keys[pygame.K_RIGHT] and x < 1000 - vel - 140:  
-            x += vel
+            x += vel * dt
             left = False
             right = True
         else: 
@@ -369,11 +388,11 @@ def third_game_scene(my_time, prisoner_list, left_prisoner_list, one_prisoner):
         if keys[pygame.K_UP] and y > 0:
             up = True
             down = False
-            y -= vel - 2
+            y -= (vel - 2) * dt
         elif keys[pygame.K_DOWN] and y < 750 - vel - 79:
             up = False
             down = True
-            y += vel - 2
+            y += (vel - 2) * dt
         else: 
             up = False
             down = False
@@ -469,7 +488,7 @@ def third_game_scene(my_time, prisoner_list, left_prisoner_list, one_prisoner):
         # refresh the screen every frame
         pygame.display.update()
         # slow down to see the animations move
-        clock.tick(constants.CLOCK_TICK)
+        clock.tick(FPS)
 
 
 def second_game_scene(my_time):
@@ -1040,7 +1059,10 @@ if __name__ == "__main__":
     # create the screen
     screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
 
-    splash_screen()
-    start_screen()
-    first_game_scene()
+    my_time = TrackTime(5, screen)
+
+    # splash_screen()
+    # start_screen()
+    # first_game_scene()
+    third_game_scene(my_time, constants.prisoners, constants.prisoners_left, constants.one_prisoner)
   
